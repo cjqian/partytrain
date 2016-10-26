@@ -27,7 +27,7 @@ public class PartyTrain
     // Drum machine: 
     // Cowbell
     SndBuf cowbell;
-    int cowbellRhythm[];
+    [0, 0, 0, 0, 0, 0, 0, 0] @=> int cowbellRhythm[];
     cowbell.read(me.dir() + "808_sounds/cowbell.aif");
     cowbell.gain(0.0);
     
@@ -119,9 +119,6 @@ public class PartyTrain
 PartyTrain partyTrain;
 partyTrain.connect(dac);
 
-[1, 0, 1, 0, 1, 0, 1, 0] @=> int cowbellRhythm[];
-partyTrain.setCowbell(cowbellRhythm);
-
 // Initialize our receiver
 OscRecv OSCin;
 OscMsg msg;
@@ -154,6 +151,29 @@ fun void receiveSpeedSlider(){
             speedSliderEvent.getInt() => int speedValue;
             partyTrain.setSpeed(speedValue);
             <<< "Received speedSlider: ", speedValue >>>;
+        }
+    }
+}
+
+// Send cowbell list
+OSCin.event("/cowbellList,i,i,i,i,i,i,i,i") @=> OscEvent cowbellListEvent;
+spork~ receiveCowbellListEvent();
+
+fun void receiveCowbellListEvent(){
+    <<<"Cowbell event received!">>>;
+    while (true){
+        cowbellListEvent => now;
+        while (cowbellListEvent.nextMsg() != 0){
+            [cowbellListEvent.getInt(), 
+            cowbellListEvent.getInt(),
+            cowbellListEvent.getInt(),
+            cowbellListEvent.getInt(),
+            cowbellListEvent.getInt(),
+            cowbellListEvent.getInt(),
+            cowbellListEvent.getInt(),
+            cowbellListEvent.getInt()] @=> int cowbellRhythm[];
+            
+            partyTrain.setCowbell(cowbellRhythm);
         }
     }
 }
